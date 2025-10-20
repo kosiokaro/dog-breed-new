@@ -24,9 +24,9 @@ public class DogApiBreedFetcher implements BreedFetcher {
      * @throws BreedNotFoundException if the breed does not exist (or if the API call fails for any reason)
      */
     @Override
-    public List<String> getSubBreeds(String breed) {
+    public List<String> getSubBreeds(String breed) throws BreedFetcher.BreedNotFoundException{
         final Request request = new Request.Builder()
-                .url(String.format("https://dog.ceo/api/breed/hound/list", breed.toLowerCase()))
+                .url(String.format("https://dog.ceo/api/breed/%s/list", breed.toLowerCase()))
                 .build();
 
         try {
@@ -37,14 +37,14 @@ public class DogApiBreedFetcher implements BreedFetcher {
                 final JSONArray messageArray = responseBody.getJSONArray("message");
                 final List<String> subBreeds = new ArrayList<>();
                 for (int i = 0; i < messageArray.length(); i++) {
-                    subBreeds.add(messageArray.getJSONObject(i).getString("name"));
+                    subBreeds.add(messageArray.getString(i));
                 }
                 return subBreeds;
             } else {
-                throw new BreedNotFoundException(responseBody.getString("message"));
+                throw new BreedFetcher.BreedNotFoundException(responseBody.getString("message"));
             }
-        } catch (IOException | org.JSONExecption event) {
-            throw new BreedNotFoundException("Failed to fetch breed: " + breed);
+        } catch (IOException | org.json.JSONException event) {
+            throw new BreedFetcher.BreedNotFoundException("Failed to fetch breed:" + breed);
         }
     }
 }
